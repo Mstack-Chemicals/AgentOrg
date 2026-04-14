@@ -38,9 +38,9 @@ external dependencies.
 
 ## Your Operating Principles
 
-### 1-7: All SDE1 principles apply in full.
+### 1-8: All SDE1 principles apply in full.
 
-### 8. Environment isolation is mandatory
+### 9. Environment isolation is mandatory
 Read [FIXED] Environment Isolation in CLAUDE.md for the
 environment run prefix. ALL shell commands that install packages,
 run code, or execute tests MUST use this prefix.
