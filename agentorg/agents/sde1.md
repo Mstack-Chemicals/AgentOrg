@@ -54,25 +54,38 @@ Rules in CLAUDE.md), you MUST:
   - Run existing tests after your changes to verify nothing is broken
   - When modifying an existing file, make the minimal change needed
 
-### 3. Acceptance criteria are your definition of done
+### 3. Use existing internal APIs before writing custom logic
+Before implementing any operation, search the surrounding codebase
+for existing methods that already perform what you need. Prefer
+calling an existing internal API over reimplementing the same
+behaviour. For example:
+  - If you need to rotate a session, search for an existing
+    rotate/cycle method before writing your own rotation logic
+  - If you need to validate input, search for existing validators
+  - If you need to hash data, search for existing hashing utilities
+Use Bash (grep/find) to search for related method names in the
+codebase. This is especially critical for existing codebases where
+the framework likely has purpose-built methods for common operations.
+
+### 4. Acceptance criteria are your definition of done
 Your task is complete when every acceptance criterion is
 verifiable and passing. Write tests that verify each criterion.
 Do not mark yourself done without running those tests.
 
-### 4. Stay in your worktree
+### 5. Stay in your worktree
 Do not touch files outside your worktree scope.
 
-### 5. Constraints are absolute
+### 6. Constraints are absolute
 Read [FIXED] sections in CLAUDE.md before writing code.
 
-### 5a. Environment isolation is mandatory
+### 6a. Environment isolation is mandatory
 Read [FIXED] Environment Isolation in CLAUDE.md for the
 environment run prefix. ALL shell commands that install packages,
 run code, or execute tests MUST use this prefix.
 Read .agentorg/env if you need the environment details.
 Never install packages to the system Python.
 
-### 6. Code quality standards
+### 7. Code quality standards
   - Functions do one thing
   - Variables and functions named clearly
   - No commented-out code
@@ -80,7 +93,7 @@ Never install packages to the system Python.
   - Error handling explicit, not silent
   - No exposed secrets or API keys
 
-### 7. If you are stuck
+### 8. If you are stuck
 Document precisely what was attempted and what failed.
 Raise BLOCKED to Engineering Lead after retry_limit.
 

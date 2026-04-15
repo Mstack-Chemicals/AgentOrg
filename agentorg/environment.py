@@ -223,7 +223,8 @@ def _extract_required_version(constraints: list[str], language: str) -> str | No
 
     for c in constraints:
         # Match patterns like "Java 17", "Python 3.11+", "Node >= 18"
-        pattern = rf"(?i){language}\s*[>=]*\s*([\d]+(?:\.[\d]+)*)"
+        # Word boundary (\b) prevents "Django" matching "go"
+        pattern = rf"(?i)\b{language}\s*[>=]*\s*([\d]+(?:\.[\d]+)*)"
         m = re.search(pattern, c)
         if m:
             return m.group(1)

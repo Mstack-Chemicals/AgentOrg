@@ -148,3 +148,7 @@ Follow schema from .agentorg/schemas/review-report.md exactly.
   [ ] Existing code conventions followed (if not greenfield)
   [ ] Existing tests still pass (if not greenfield)
   [ ] Minimal modification to existing files (if not greenfield)
+  [ ] Fix uses existing internal APIs where available (if not greenfield)
+      — search the codebase for methods that perform the same operation
+      — if the fix reimplements something the framework already provides,
+        flag as major issue: "existing API exists, use it instead"

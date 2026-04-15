@@ -136,9 +136,20 @@ Read objective.md and init-context.md.
 Generate primary questions — each must trace to:
   goal | constraint | success criterion
 Generate secondary questions — each must trace to: goal only
-If not greenfield: include the codebase_summary from Step 1b
-in the research-brief so Research Lead and downstream agents
-understand the existing architecture they are building on top of.
+If not greenfield:
+  - Include the codebase_summary from Step 1b in the research-brief
+    so Research Lead and downstream agents understand the existing
+    architecture they are building on top of.
+  - Generate at least one primary question about existing internal
+    APIs and patterns for the corrective or constructive action.
+    Example: if the objective is to fix session handling, a question
+    must be "What existing internal methods does the codebase provide
+    for session lifecycle operations (creation, rotation, invalidation)?"
+    The Researchers must discover what utilities already exist so the
+    fix uses them rather than reimplementing behaviour from scratch.
+    This is critical — the most common failure mode in existing
+    codebase fixes is writing custom logic when the codebase already
+    has an internal API for the exact operation needed.
 Write .agentorg/runs/latest/handoffs/research-brief.md
 Update phase-status.md: phase=research, status=active
 Update run-log.md.
