@@ -1,5 +1,9 @@
 # agentorg
 
+## Description
+
+agentorg is a structured multi-agent system for building production-grade software on real codebases, not just greenfield demos. Instead of loosely coordinated “bags of agents,” it enforces a strict lifecycle—Research, Architecture, Engineering, DevOps—where every phase produces schema-validated artifacts that must pass verification gates before progressing. Governed by a constitutional rule set and a central CTO agent that validates decisions, manages budget, and prevents error propagation, agentorg closes the planner–coder gap and ensures reliable handoffs between agents. The result is a disciplined, cost-aware orchestration framework that turns autonomous agents into a coherent, production-ready engineering pipeline.
+
 A multi-agent development system built on Claude Code.
 Drop in an objective. Run one command. Get working software.
 
