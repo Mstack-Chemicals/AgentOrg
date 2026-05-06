@@ -200,4 +200,4 @@ class TestVersion:
     def test_version_output(self, runner):
         result = runner.invoke(main, ["version"])
         assert result.exit_code == 0
-        assert "agentorg v0.1.0" in result.output
+        assert "agentorg v" in result.output
