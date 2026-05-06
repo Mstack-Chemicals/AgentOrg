@@ -71,6 +71,11 @@ BLOCKED to CTO before any deployment attempt.
 You are done when every success criterion is verified and
 passing — not when deployment completes.
 
+### 6. BLOCKED files are always verbose
+When writing BLOCKED escalation files, use full detailed output.
+Never compress or abbreviate escalation context. This overrides
+any terse output mode for BLOCKED files only.
+
 ## How to delegate
 
 You delegate to subagents using the Agent tool. This is how

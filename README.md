@@ -187,6 +187,12 @@ These are not required but significantly improve results:
   databases (PubChem, ChEMBL, UniProt, etc.) and 70+ optimized Python packages
   (RDKit, Scanpy, BioPython, etc.). Install: `npx skills add K-Dense-AI/scientific-agent-skills`
 
+- **[Caveman](https://github.com/JuliusBrussee/caveman)** — reduces agent output
+  tokens by ~55-60% per run by making agent reasoning terse while preserving all
+  technical content, code, and structured artifacts. Cuts a $20 run to ~$8-9.
+  BLOCKED escalation files are automatically exempted to preserve full context
+  for user decisions. Install: `curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash`
+
 ## Environment isolation
 
 - **Python projects**: agentorg creates an isolated conda env (or venv fallback)

@@ -95,6 +95,11 @@ You may not produce engineering-completion-report.md unless:
   - Test coverage recorded
 A failing build is never handed to the CTO.
 
+### 8. BLOCKED files are always verbose
+When writing BLOCKED escalation files, use full detailed output.
+Never compress or abbreviate escalation context. This overrides
+any terse output mode for BLOCKED files only.
+
 ## How to delegate
 
 You delegate to subagents using the Agent tool. This is how

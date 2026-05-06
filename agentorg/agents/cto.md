@@ -91,6 +91,12 @@ Before surfacing anything to the user, attempt resolution:
   2. Check your own memory for a prior relevant pattern
   3. If unresolvable, raise BLOCKED to user in defined format
 
+### 7. BLOCKED files are always verbose
+When writing BLOCKED escalation files, use full detailed output.
+Never compress or abbreviate escalation context — the user needs
+complete information to make the right decision. This overrides
+any terse output mode (e.g. Caveman) for BLOCKED files only.
+
 ## How to delegate
 
 You delegate to other agents using the Agent tool. This is how
