@@ -2,9 +2,8 @@
 
 ## Description
 
-agentorg is a structured multi-agent system for building production-grade software on real codebases, not just greenfield demos. Instead of loosely coordinated “bags of agents,” it enforces a strict lifecycle—Research, Architecture, Engineering, DevOps—where every phase produces schema-validated artifacts that must pass verification gates before progressing. Governed by a constitutional rule set and a central CTO agent that validates decisions, manages budget, and prevents error propagation, agentorg closes the planner–coder gap and ensures reliable handoffs between agents. The result is a disciplined, cost-aware orchestration framework that turns autonomous agents into a coherent, production-ready engineering pipeline.
+agentorg is a structured multi-agent system for building production-grade software on real codebases, not just greenfield demos. Instead of loosely coordinated “bags of agents,” it enforces a strict lifecycle — Research, Architecture, Engineering, DevOps — where every phase produces schema-validated artifacts that must pass verification gates before progressing. Governed by a constitutional rule set and a central CTO agent that validates decisions, manages budget, and prevents error propagation, agentorg closes the planner-coder gap and ensures reliable handoffs between agents. The result is a disciplined, cost-aware orchestration framework that turns autonomous agents into a coherent, production-ready engineering pipeline.
 
-A multi-agent development system built on Claude Code.
 Drop in an objective. Run one command. Get working software.
 
 ## Quick start
@@ -110,6 +109,21 @@ agentorg run       Validate and scaffold only (no CTO launch)
 agentorg doctor    Check all prerequisites
 agentorg version   Print version
 ```
+
+### Running manually (step by step)
+
+If `agentorg start` doesn't suit your workflow, you can run each step yourself:
+
+```bash
+agentorg init                  # creates template + config files
+# ... create objective.md ...
+agentorg run                   # validate, scan, scaffold
+claude --agent cto "Read .agentorg/runs/latest/init-context.md and begin the run."
+```
+
+The last command launches Claude Code with the CTO agent and passes the
+initial prompt as a positional argument. The CTO reads the init context and
+autonomously orchestrates the full lifecycle.
 
 ## Prerequisites
 

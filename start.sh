@@ -101,4 +101,4 @@ echo ""
 info "Launching CTO agent..."
 echo ""
 
-claude --agent cto --prompt "Read .agentorg/runs/latest/init-context.md and begin the run."
+claude --agent cto "Read .agentorg/runs/latest/init-context.md and begin the run."

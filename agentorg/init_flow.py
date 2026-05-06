@@ -890,10 +890,7 @@ def run() -> None:
     click.echo()
     click.echo("Next step:")
     click.echo(
-        "  Run claude in this directory."
-    )
-    click.echo(
-        "  The CTO agent will activate automatically and begin the run."
+        '  claude --agent cto "Read .agentorg/runs/latest/init-context.md and begin the run."'
     )
 
 
@@ -1054,7 +1051,6 @@ def start() -> None:
             [
                 "claude",
                 "--agent", "cto",
-                "--prompt",
                 "Read .agentorg/runs/latest/init-context.md and begin the run.",
             ],
         )
