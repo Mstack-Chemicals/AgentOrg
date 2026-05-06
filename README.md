@@ -66,6 +66,10 @@ and it will read, understand, and build on top of it:
 The system surveys the existing architecture, follows existing patterns, and
 runs existing tests after every change to ensure nothing breaks.
 
+If [Graphify](https://github.com/safishamsi/graphify) is installed, the CTO
+automatically builds a code knowledge graph before the run starts, giving
+every downstream agent a structural map of the codebase.
+
 ## How it works
 
 ```
@@ -106,6 +110,7 @@ CTO (Opus)
 agentorg start     Full flow: init, wait for objective, run, launch CTO
 agentorg init      Create template and config files only
 agentorg run       Validate and scaffold only (no CTO launch)
+agentorg resume    Resume a previous run from where it stopped
 agentorg doctor    Check all prerequisites
 agentorg version   Print version
 ```
@@ -124,6 +129,24 @@ claude --agent cto "Read .agentorg/runs/latest/init-context.md and begin the run
 The last command launches Claude Code with the CTO agent and passes the
 initial prompt as a positional argument. The CTO reads the init context and
 autonomously orchestrates the full lifecycle.
+
+## Resuming a run
+
+If a run is interrupted — user cancellation, error, or you need to fix your
+objective — resume from where it stopped:
+
+```bash
+agentorg resume                        # resume latest run
+agentorg resume 20260413T120520        # resume a specific run
+agentorg resume --from architect       # restart from a specific phase
+```
+
+The system detects which phases completed by checking for handoff artifacts.
+If `objective.md` was modified after the run started, it warns you and
+re-validates before continuing.
+
+The `--from` flag discards artifacts from that phase forward and restarts
+from there. Useful when Research was fine but Architecture needs a redo.
 
 ## Prerequisites
 
@@ -146,7 +169,23 @@ Checking prerequisites...
   ok  anthropic SDK installed
   ok  conda available
   ok  git available
+  ok  graphify available
+  ok  scientific-agent-skills installed
 ```
+
+### Optional tools
+
+These are not required but significantly improve results:
+
+- **[Graphify](https://github.com/safishamsi/graphify)** — builds a knowledge graph
+  of your codebase so agents understand module relationships, god nodes, and
+  cross-cutting connections without reading every file. Especially valuable for
+  large existing codebases (500+ files). Install: `pip install graphifyy && graphify install`
+
+- **[Scientific Agent Skills](https://github.com/K-Dense-AI/scientific-agent-skills)** —
+  135 pre-built skills giving Research agents structured access to 78+ scientific
+  databases (PubChem, ChEMBL, UniProt, etc.) and 70+ optimized Python packages
+  (RDKit, Scanpy, BioPython, etc.). Install: `npx skills add K-Dense-AI/scientific-agent-skills`
 
 ## Environment isolation
 
@@ -169,10 +208,11 @@ You can inspect and modify them.
 
 Run `agentorg init` to see the full template schema in `objective.template.md`.
 
-## V2 roadmap
+## Roadmap
 
-- `agentorg resume` -- resume from prior run
 - `agentorg inspect` -- browse prior run artifacts
+- Fast-track mode for small tasks (compressed phases, not skipped)
+- Parallel orgs for multi-repo objectives
 - Formal complexity rubric
 - Architect subagents for large PRD sets
 

@@ -12,7 +12,7 @@ tools:
   - WebFetch
   - WebSearch
 skills:
-  - claude-scientific-skills
+  - scientific-agent-skills
 read_paths:
   - CLAUDE.md
   - .agentorg/runs/latest/handoffs/research-brief.md
@@ -46,17 +46,25 @@ on your assigned question.
 Read [FIXED] Out of Scope in CLAUDE.md before searching.
 If a result leads into out-of-scope territory, do not follow it.
 
-### 3. Source quality matters
+### 3. Use scientific skills when available
+If scientific-agent-skills are installed (K-Dense-AI), use them
+for database queries (PubChem, ChEMBL, UniProt, etc.), molecular
+analysis (RDKit), literature search, and domain-specific workflows.
+These skills provide structured access to 78+ scientific databases
+and 70+ optimized Python packages. Prefer skill-guided queries
+over generic web search for scientific and technical questions.
+
+### 4. Source quality matters
 Prefer primary sources — papers, official documentation,
 authoritative databases — over secondary sources.
 Note source quality in your findings.
 Flag low-confidence findings explicitly.
 
-### 4. Structured output only
+### 5. Structured output only
 Write your findings to finding-[question-id].md using
 the schema defined in .agentorg/schemas/finding.md exactly.
 
-### 5. If you cannot answer
+### 6. If you cannot answer
 State clearly what was found and what was not.
 Set confidence: low.
 Populate caveats fully.

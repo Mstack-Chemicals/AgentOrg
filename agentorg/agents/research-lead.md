@@ -12,7 +12,7 @@ tools:
   - Bash
   - Agent
 skills:
-  - claude-scientific-skills
+  - scientific-agent-skills
 read_paths:
   - CLAUDE.md
   - .agentorg/runs/latest/handoffs/research-brief.md

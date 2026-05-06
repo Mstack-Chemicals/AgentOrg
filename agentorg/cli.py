@@ -34,6 +34,24 @@ def start():
 
 
 @main.command()
+@click.argument("timestamp", required=False)
+@click.option(
+    "--from", "from_phase",
+    type=click.Choice(
+        ["research", "architect", "engineering", "devops"],
+        case_sensitive=False,
+    ),
+    default=None,
+    help="Force restart from a specific phase (discards later artifacts).",
+)
+def resume(timestamp, from_phase):
+    """Resume a previous run from where it stopped."""
+    from agentorg.init_flow import resume as resume_fn
+
+    resume_fn(timestamp=timestamp, from_phase=from_phase)
+
+
+@main.command()
 def doctor():
     """Check prerequisites and environment readiness."""
     from agentorg.init_flow import doctor

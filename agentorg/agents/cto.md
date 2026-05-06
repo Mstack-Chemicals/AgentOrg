@@ -19,6 +19,7 @@ read_paths:
   - .agentorg/decisions.md
   - .agentorg/memory/cto/
   - src/
+  - graphify-out/
 write_paths:
   - CLAUDE.md
   - .agentorg/runs/latest/phase-status.md
@@ -118,6 +119,15 @@ If validation fails → BLOCKED to user.
 
 ### Step 1b — Codebase survey (existing projects only)
 Check is_greenfield in init-context.md. If false:
+  - Check if graphify-out/GRAPH_REPORT.md exists. If it does, read it
+    first — it contains a knowledge graph of the codebase with god nodes
+    (most-connected modules), community structure, and cross-module
+    connections. This is the most efficient way to understand the
+    architecture without reading every file.
+  - If no graph report exists, check if graphify is installed
+    (run: which graphify). If available, run: graphify . in the code
+    root directory to generate the knowledge graph. Then read
+    graphify-out/GRAPH_REPORT.md.
   - Read the existing src/ directory structure using Bash (find or ls)
   - Identify key files: entry points, config, data models, API routes,
     tests, dependency files (requirements.txt, pyproject.toml, etc.)
@@ -126,7 +136,9 @@ Check is_greenfield in init-context.md. If false:
   - Read [FIXED] Existing Codebase Rules in CLAUDE.md
   - Produce a codebase_summary section to include in research-brief.md
     covering: directory structure, tech stack, architectural patterns,
-    key modules, data models, and conventions observed
+    key modules, data models, and conventions observed. If a graph
+    report was available, include the god nodes and community structure
+    in the summary.
 This summary is critical — it is how every downstream agent
 understands the existing code they must integrate with.
 If greenfield, skip this step.

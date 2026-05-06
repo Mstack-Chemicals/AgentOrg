@@ -86,7 +86,23 @@ if [ ! -f "objective.md" ]; then
 fi
 
 # -------------------------------------------------------------------
-# 5. Run agentorg run
+# 5. Build code knowledge graph (if graphify is available)
+# -------------------------------------------------------------------
+
+if command -v graphify &>/dev/null; then
+    # Check if this is an existing codebase (not greenfield)
+    if [ -d ".git" ] || find . -maxdepth 2 -name "*.py" -o -name "*.js" -o -name "*.java" -o -name "*.go" 2>/dev/null | head -1 | grep -q .; then
+        if [ ! -f "graphify-out/GRAPH_REPORT.md" ]; then
+            info "Building code knowledge graph..."
+            graphify . 2>/dev/null || warn "graphify failed — continuing without knowledge graph"
+        else
+            info "Knowledge graph already built (graphify-out/GRAPH_REPORT.md)"
+        fi
+    fi
+fi
+
+# -------------------------------------------------------------------
+# 6. Run agentorg run
 # -------------------------------------------------------------------
 
 info "Starting run..."
@@ -94,7 +110,7 @@ echo ""
 agentorg run
 
 # -------------------------------------------------------------------
-# 6. Launch Claude with CTO agent
+# 7. Launch Claude with CTO agent
 # -------------------------------------------------------------------
 
 echo ""

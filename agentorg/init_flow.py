@@ -956,6 +956,37 @@ def doctor() -> None:
         click.echo("    Install git: https://git-scm.com")
         all_ok = False
 
+    # graphify (optional — for existing codebases)
+    if shutil.which("graphify"):
+        click.echo("  \u2713 graphify available (code knowledge graphs)")
+    else:
+        click.echo(
+            "  ~ graphify not found (optional — improves existing codebase understanding)"
+        )
+        click.echo(
+            "    Install: pip install graphifyy && graphify install"
+        )
+
+    # scientific skills (optional — for research agents)
+    skills_dir = os.path.expanduser("~/.claude/skills")
+    has_sci_skills = (
+        os.path.isdir(skills_dir)
+        and any(
+            "scientific" in d.lower()
+            for d in os.listdir(skills_dir)
+            if os.path.isdir(os.path.join(skills_dir, d))
+        )
+    ) if os.path.isdir(skills_dir) else False
+    if has_sci_skills:
+        click.echo("  \u2713 scientific-agent-skills installed")
+    else:
+        click.echo(
+            "  ~ scientific-agent-skills not found (optional — enhances research)"
+        )
+        click.echo(
+            "    Install: npx skills add K-Dense-AI/scientific-agent-skills"
+        )
+
     # Project files
     click.echo()
     click.echo("Project state:")
@@ -1058,5 +1089,291 @@ def start() -> None:
         click.echo("  \u2717 Could not launch claude.")
         click.echo(
             "    Run manually: claude --agent cto"
+        )
+        raise SystemExit(1)
+
+
+# ---------------------------------------------------------------------------
+# Phase detection for resume
+# ---------------------------------------------------------------------------
+
+# Ordered list of phases and their key artifacts
+_PHASE_ORDER = ["research", "architect", "engineering", "devops"]
+
+_PHASE_ARTIFACTS: dict[str, list[str]] = {
+    "research": [
+        "handoffs/research-output-manifest.md",
+    ],
+    "architect": [
+        "handoffs/task-breakdown.md",
+    ],
+    "engineering": [
+        "handoffs/engineering-completion-report.md",
+    ],
+    "devops": [
+        "handoffs/deployment-report.md",
+    ],
+}
+
+_PHASE_DISPLAY = {
+    "research": "Research",
+    "architect": "Architecture",
+    "engineering": "Engineering",
+    "devops": "DevOps",
+}
+
+
+def _detect_completed_phases(run_dir: str) -> list[str]:
+    """Determine which phases have completed based on artifact presence."""
+    completed = []
+    for phase in _PHASE_ORDER:
+        artifacts = _PHASE_ARTIFACTS[phase]
+        if all(
+            os.path.exists(os.path.join(run_dir, a)) for a in artifacts
+        ):
+            completed.append(phase)
+        else:
+            break  # phases are sequential, stop at first incomplete
+    return completed
+
+
+def _detect_resume_phase(run_dir: str) -> str | None:
+    """Determine which phase to resume from.
+
+    Returns the first incomplete phase, or None if all complete.
+    """
+    completed = _detect_completed_phases(run_dir)
+    for phase in _PHASE_ORDER:
+        if phase not in completed:
+            return phase
+    return None
+
+
+def _discard_phase_artifacts(run_dir: str, from_phase: str) -> list[str]:
+    """Remove artifacts from a phase and all subsequent phases.
+
+    Returns list of removed files.
+    """
+    removed = []
+    discard = False
+    for phase in _PHASE_ORDER:
+        if phase == from_phase:
+            discard = True
+        if discard:
+            for artifact_path in _PHASE_ARTIFACTS[phase]:
+                full_path = os.path.join(run_dir, artifact_path)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+                    removed.append(artifact_path)
+            # Also remove phase-specific artifacts (prd-*, adr-*, etc.)
+            handoffs = os.path.join(run_dir, "handoffs")
+            if phase == "research" and os.path.isdir(handoffs):
+                for f in os.listdir(handoffs):
+                    if f.startswith(("prd-", "finding-", "research-output")):
+                        fp = os.path.join(handoffs, f)
+                        os.remove(fp)
+                        removed.append(f"handoffs/{f}")
+            elif phase == "architect" and os.path.isdir(handoffs):
+                for f in os.listdir(handoffs):
+                    if f.startswith(("adr-", "task-breakdown")):
+                        fp = os.path.join(handoffs, f)
+                        os.remove(fp)
+                        removed.append(f"handoffs/{f}")
+            elif phase == "engineering" and os.path.isdir(handoffs):
+                for f in os.listdir(handoffs):
+                    if f.startswith("engineering-completion"):
+                        fp = os.path.join(handoffs, f)
+                        os.remove(fp)
+                        removed.append(f"handoffs/{f}")
+            elif phase == "devops" and os.path.isdir(handoffs):
+                for f in os.listdir(handoffs):
+                    if f.startswith(("deployment-brief", "deployment-report")):
+                        fp = os.path.join(handoffs, f)
+                        os.remove(fp)
+                        removed.append(f"handoffs/{f}")
+    return removed
+
+
+def resume(
+    timestamp: str | None = None, from_phase: str | None = None
+) -> None:
+    """agentorg resume — resume a previous run from where it stopped."""
+    click.echo(f"agentorg v{__version__}")
+    click.echo()
+
+    # ------------------------------------------------------------------
+    # Find the run to resume
+    # ------------------------------------------------------------------
+    runs_dir = os.path.join(".agentorg", "runs")
+    if not os.path.isdir(runs_dir):
+        click.echo("  \u2717 No runs found. Run agentorg run first.")
+        raise SystemExit(1)
+
+    if timestamp:
+        run_dir = os.path.join(runs_dir, timestamp)
+        if not os.path.isdir(run_dir):
+            click.echo(f"  \u2717 Run {timestamp} not found.")
+            available = sorted(
+                d for d in os.listdir(runs_dir)
+                if d != "latest" and os.path.isdir(os.path.join(runs_dir, d))
+            )
+            if available:
+                click.echo(f"    Available runs: {', '.join(available)}")
+            raise SystemExit(1)
+    else:
+        # Use latest
+        symlink = os.path.join(runs_dir, "latest")
+        if not os.path.islink(symlink):
+            click.echo("  \u2717 No latest run found. Run agentorg run first.")
+            raise SystemExit(1)
+        timestamp = os.readlink(symlink)
+        run_dir = os.path.join(runs_dir, timestamp)
+
+    click.echo(f"Resuming run: {timestamp}")
+    click.echo()
+
+    # ------------------------------------------------------------------
+    # Check for objective.md changes
+    # ------------------------------------------------------------------
+    init_context_path = os.path.join(run_dir, "init-context.md")
+    if not os.path.exists(init_context_path):
+        click.echo("  \u2717 init-context.md not found in run directory.")
+        click.echo("    This run may be corrupted. Start a fresh run.")
+        raise SystemExit(1)
+
+    run_mtime = os.path.getmtime(init_context_path)
+    objective_path = "objective.md"
+    if not os.path.exists(objective_path):
+        click.echo("  \u2717 objective.md not found.")
+        raise SystemExit(1)
+
+    objective_mtime = os.path.getmtime(objective_path)
+    objective_changed = objective_mtime > run_mtime
+
+    if objective_changed:
+        click.echo(
+            "  ! objective.md was modified after this run started."
+        )
+        click.echo(
+            "    Existing artifacts may be inconsistent with the "
+            "updated objective."
+        )
+        click.echo()
+        click.echo(
+            "  Press enter to resume anyway, or Ctrl+C to start fresh "
+            "with: agentorg run"
+        )
+        _wait_for_enter()
+
+        # Re-validate
+        errors = validate_objective(objective_path)
+        if errors:
+            click.echo(f"  \u2717 {errors[0]}")
+            raise SystemExit(1)
+
+        # Re-populate CLAUDE.md [FIXED] sections
+        objective_data = parse_objective(objective_path)
+        env_info_path = os.path.join(".agentorg", "env")
+        env_run_prefix = ""
+        if os.path.exists(env_info_path):
+            with open(env_info_path) as f:
+                for line in f:
+                    if line.startswith("run_prefix="):
+                        env_run_prefix = line.split("=", 1)[1].strip()
+        env = scan_environment()
+        _populate_claude_md(objective_data, env_run_prefix, env)
+        click.echo("  \u2713 CLAUDE.md [FIXED] sections updated")
+
+        # Re-write init-context.md
+        _write_init_context(run_dir, objective_data, env)
+        click.echo("  \u2713 init-context.md updated")
+        click.echo()
+
+    # ------------------------------------------------------------------
+    # Detect resume point
+    # ------------------------------------------------------------------
+    completed = _detect_completed_phases(run_dir)
+
+    if from_phase:
+        # User forcing restart from a specific phase
+        from_phase = from_phase.lower()
+        if from_phase not in _PHASE_ORDER:
+            click.echo(f"  \u2717 Unknown phase: {from_phase}")
+            click.echo(
+                f"    Valid phases: {', '.join(_PHASE_ORDER)}"
+            )
+            raise SystemExit(1)
+
+        # Discard artifacts from that phase forward
+        removed = _discard_phase_artifacts(run_dir, from_phase)
+        if removed:
+            click.echo(
+                f"  Discarding artifacts from "
+                f"{_PHASE_DISPLAY[from_phase]} phase forward:"
+            )
+            for r in removed:
+                click.echo(f"    - {r}")
+            click.echo()
+
+        resume_phase = from_phase
+        # Recompute completed after discard
+        completed = _detect_completed_phases(run_dir)
+    else:
+        resume_phase = _detect_resume_phase(run_dir)
+
+    if resume_phase is None:
+        click.echo("  All phases completed. Nothing to resume.")
+        click.echo("  To start a fresh run: agentorg run")
+        return
+
+    # Display status
+    click.echo("Phase status:")
+    for phase in _PHASE_ORDER:
+        display = _PHASE_DISPLAY[phase]
+        if phase in completed:
+            click.echo(f"  \u2713 {display} — complete")
+        elif phase == resume_phase:
+            click.echo(f"  \u25b6 {display} — resuming")
+        else:
+            click.echo(f"  \u2022 {display} — pending")
+    click.echo()
+
+    # ------------------------------------------------------------------
+    # Build the resume prompt for CTO
+    # ------------------------------------------------------------------
+    completed_summary = ""
+    if completed:
+        completed_names = [_PHASE_DISPLAY[p] for p in completed]
+        completed_summary = (
+            f"The following phases are already complete: "
+            f"{', '.join(completed_names)}. "
+            f"Their artifacts are in .agentorg/runs/latest/handoffs/. "
+            f"Do NOT regenerate these artifacts. "
+        )
+
+    resume_prompt = (
+        f"You are resuming run {timestamp}. "
+        f"Read .agentorg/runs/latest/init-context.md for full context. "
+        f"{completed_summary}"
+        f"Resume from the {_PHASE_DISPLAY[resume_phase]} phase. "
+        f"Read existing artifacts in handoffs/ before proceeding. "
+        f"Continue the lifecycle from Step "
+        f"{_PHASE_ORDER.index(resume_phase) * 3 + 2} of your lifecycle loop."
+    )
+
+    click.echo(f"Launching CTO agent (resuming from {_PHASE_DISPLAY[resume_phase]})...")
+    click.echo()
+
+    try:
+        subprocess.run(
+            ["claude", "--agent", "cto", resume_prompt],
+        )
+    except FileNotFoundError:
+        click.echo("  \u2717 Could not launch claude.")
+        click.echo(
+            "    Run manually:"
+        )
+        click.echo(
+            f'    claude --agent cto "{resume_prompt}"'
         )
         raise SystemExit(1)
